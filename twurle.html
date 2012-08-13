@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>twurle!</title>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/kendo.web.min.js"></script>
+    <link href="styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="styles/kendo.default.min.css" rel="stylesheet" />
+</head>
+<body style="font-size: 12px;">
+    <div id="title">welcome to twurle! :&gt;</div>
+    <table style="border">
+        <tr>
+            <td><img src="twurle_small.png"></td>
+            <td>
+                <div class="demo-section" style="text-align: left;">
+                        <input id="date"/>
+                        <br><br><br>
+                        <input id="result_count"/>
+                </div>
+            </td>
+        </tr>
+    </table>
+        <br>
+        <div id="example" class="k-content">
+            <div id="grid"></div>
+            <script>
+                $(document).ready(function() {
+                    
+                    function onChange() {
+                        var date_value = $("#date").val();
+                        if (date_value == '') {
+                            date_value = getDate();
+                        }
+                        loadGrid(date_value, $("#result_count").val());
+                    }
+
+
+                    function getDate() {
+                        var dt = new Date();
+                        var year = dt.getFullYear();
+                        var month = dt.getUTCMonth()+1;
+                        var day = dt.getDate();
+
+                        if (month < 10) {
+                            month = "0"+month.toString();
+                        }
+
+                        if (day < 10) {
+                            day = "0"+day.toString();
+                        }
+
+                        return month.toString()+day.toString()+year.toString()+".urls.json";
+                    }
+
+                    function loadGrid(date_value, page_size) {
+                        // <!-- start grid -->
+                        var tweetSource = new kendo.data.DataSource({
+                            transport: {
+                                read: {
+                                    dataType: "json",
+                                    url: "output/"+date_value
+                                },
+                                schema: {
+                                    model: {
+                                        fields: {
+                                            screen_name: { type: "string" },
+                                            tags: { type: "string" },
+                                            url: { type: "string" },
+                                            title: { type: "string"},
+                                            text: { type: "string" },
+                                            time: { type: "string" }
+                                        }
+                                    }
+                                },
+                                pageSize: page_size
+                            }
+                        });
+                        tweetSource.read();
+                        tweetSource.sort({field: "time", dir: "desc"});
+                        $("#grid").kendoGrid({
+                            dataSource: tweetSource,
+                            filterable: true,
+                            sortable: true,
+                            pageable: true,
+                            columns: [{
+                                    field:"screen_name",
+                                    title:"User",
+                                    filterable: true,
+                                    template: '<a href="https://twitter.com/#= screen_name #">#= screen_name #</a>',
+                                    width: 80,
+                                }, {
+                                    field: "tags",
+                                    title: "Tags",
+                                    template: kendo.template('#= tags #'),
+                                    width: 60,
+                                }, {
+                                    field: "titles",
+                                    title: "Link Titles",
+                                    template: kendo.template('#= titles #'),
+                                    width: 200,
+                                }, {
+                                    field: "url",
+                                    title: "URLs",
+                                    template: kendo.template('#= url #'),
+                                    width: 300
+
+                                }, {
+                                    field: "text",
+                                    title: "Tweet",
+                                    width: 200,
+                                }, {
+                                    field: "time",
+                                    title: "Time Sent",
+                                    width: 150,
+                                }
+                            ]
+                        });
+
+                    }
+
+                    $("#date").kendoDropDownList({
+                        dataTextField: "text",
+                        dataValueField: "value",
+                        optionLabel: "Select date...",
+                        index: 0,
+                        dataSource: {
+                            transport: {
+                                read: {
+                                    dataType: "json",
+                                    url: "output/filelist.json"
+                                }
+                            }
+                        },
+                        change: onChange
+                    });
+                    var results = [
+                            { text: "10", value: 10 },
+                            { text: "25", value: 25 },
+                            { text: "50", value: 50 },
+                            { text: "100", value: 100}
+                    ];
+                    $("#result_count").kendoDropDownList({
+                        dataSource: results,
+                        dataTextField: "text",
+                        dataValueField: "value",
+                        index: 1,
+                        change: onChange
+                    })
+                    loadGrid(getDate(), $("#result_count").val());
+                });
+            </script>
+        </div>
+</body>
+</html>
