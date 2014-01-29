@@ -1,3 +1,4 @@
+# THIS PROJECT IS DEPRECATED/NO LONGER WORKS
 requirements: 
 You should install (using pip or setuptools in python):
 requests: pip install requests
